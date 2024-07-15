@@ -53,7 +53,7 @@ func getItem(page, size int, wg *sync.WaitGroup, ch chan<- ResponseData) {
 }
 
 func main() {
-	const maxPages = 221
+	maxPages := 221
 	const size = 100
 	var wg sync.WaitGroup
 	ch := make(chan ResponseData, maxPages)
