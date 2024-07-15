@@ -30,7 +30,7 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add all_crypto.json
+        git add .
         timestamp=$(date -u)
-        git commit -m "Update all_crypto.json - $timestamp"
+        git commit -m "$timestamp all_crypto.json"
         git push "https://${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:${{ github.ref }}
