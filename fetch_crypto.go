@@ -117,34 +117,34 @@ func main() {
 
 	fmt.Printf("Data saved to %s\n", finalFilename)
 
-	err = runGitCommand("config", "--global", "user.name", "github-actions[bot]")
-	if err != nil {
-		fmt.Println("Error configuring Git user:", err)
-		return
-	}
-	err = runGitCommand("config", "--global", "user.email", "github-actions[bot]@users.noreply.github.com")
-	if err != nil {
-		fmt.Println("Error configuring Git email:", err)
-		return
-	}
-	err = runGitCommand("add", finalFilename)
-	if err != nil {
-		fmt.Println("Error adding files to Git:", err)
-		return
-	}
-	timestamp := time.Now().UTC().Format(time.RFC3339)
-	err = runGitCommand("commit", "-m", fmt.Sprintf("%s all_crypto.json", timestamp))
-	if err != nil {
-		fmt.Println("Error committing changes:", err)
-		return
-	}
-	GH_TOKEN := os.Getenv("GH_TOKEN")
-	GITHUB_REPOSITORY := os.Getenv("GITHUB_REPOSITORY")
-	url := fmt.Sprintf("https://%s@github.com/%s.git", GH_TOKEN, GITHUB_REPOSITORY)
-	fmt.Println("Pushing changes to", url)
-	err = runGitCommand("push", url, "HEAD:master")
-	if err != nil {
-		fmt.Println("Error pushing changes:", err)
-		return
-	}
+	// err = runGitCommand("config", "--global", "user.name", "github-actions[bot]")
+	// if err != nil {
+	// 	fmt.Println("Error configuring Git user:", err)
+	// 	return
+	// }
+	// err = runGitCommand("config", "--global", "user.email", "github-actions[bot]@users.noreply.github.com")
+	// if err != nil {
+	// 	fmt.Println("Error configuring Git email:", err)
+	// 	return
+	// }
+	// err = runGitCommand("add", finalFilename)
+	// if err != nil {
+	// 	fmt.Println("Error adding files to Git:", err)
+	// 	return
+	// }
+	// timestamp := time.Now().UTC().Format(time.RFC3339)
+	// err = runGitCommand("commit", "-m", fmt.Sprintf("%s all_crypto.json", timestamp))
+	// if err != nil {
+	// 	fmt.Println("Error committing changes:", err)
+	// 	return
+	// }
+	// GH_TOKEN := os.Getenv("GH_TOKEN")
+	// GITHUB_REPOSITORY := os.Getenv("GITHUB_REPOSITORY")
+	// url := fmt.Sprintf("https://%s@github.com/%s.git", GH_TOKEN, GITHUB_REPOSITORY)
+	// fmt.Println("Pushing changes to", url)
+	// err = runGitCommand("push", url, "HEAD:master")
+	// if err != nil {
+	// 	fmt.Println("Error pushing changes:", err)
+	// 	return
+	// }
 }
