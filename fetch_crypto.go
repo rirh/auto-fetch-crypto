@@ -139,9 +139,8 @@ func main() {
 		return
 	}
 	GH_TOKEN := os.Getenv("GH_TOKEN")
-	GITHUB_ACTOR := os.Getenv("GITHUB_ACTOR")
 	GITHUB_REPOSITORY := os.Getenv("GITHUB_REPOSITORY")
-	url := fmt.Sprintf("https://%s@github.com/%s/%s.git", GH_TOKEN, GITHUB_ACTOR, GITHUB_REPOSITORY)
+	url := fmt.Sprintf("https://%s@github.com/%s.git", GH_TOKEN, GITHUB_REPOSITORY)
 	fmt.Println("Pushing changes to", url)
 	err = runGitCommand("push", url, "HEAD:master")
 	if err != nil {

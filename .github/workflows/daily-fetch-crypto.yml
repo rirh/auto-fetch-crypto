@@ -24,7 +24,6 @@ jobs:
       - name: Run Go script
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: go run fetch_crypto.go
 
