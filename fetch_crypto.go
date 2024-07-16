@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"sync"
 	"time"
 )
@@ -52,42 +53,48 @@ func getItem(page, size int, wg *sync.WaitGroup, ch chan<- ResponseData) {
 	ch <- responseData
 }
 
+func runGitCommand(args ...string) error {
+	cmd := exec.Command("git", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
 func main() {
-	// maxPages := 221
-	// const size = 100
-	// var wg sync.WaitGroup
-	// ch := make(chan ResponseData, maxPages)
+	const maxPages = 221
+	const size = 100
+	var wg sync.WaitGroup
+	ch := make(chan ResponseData, maxPages)
 
-	// for page := 1; page <= maxPages; page++ {
-	// 	wg.Add(1)
-	// 	time.Sleep(time.Millisecond * 200)
-	// 	go getItem(page, size, &wg, ch)
-	// }
+	for page := 1; page <= maxPages; page++ {
+		wg.Add(1)
+		time.Sleep(time.Millisecond * 200)
+		go getItem(page, size, &wg, ch)
+	}
 
-	// go func() {
-	// 	wg.Wait()
-	// 	close(ch)
-	// }()
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
 
-	// var allData []interface{}
-	// for data := range ch {
-	// 	filename := fmt.Sprintf("crypto_%d.json", data.Currpage)
-	// 	jsonData, err := json.Marshal(data.Data)
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 		return
-	// 	}
-	// 	err = os.WriteFile(filename, jsonData, 0644)
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 		return
-	// 	}
+	var allData []interface{}
+	for data := range ch {
+		filename := fmt.Sprintf("crypto_%d.json", data.Currpage)
+		jsonData, err := json.Marshal(data.Data)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		err = os.WriteFile(filename, jsonData, 0644)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 
-	// 	allData = append(allData, data.Data...)
-	// }
+		allData = append(allData, data.Data...)
+	}
 
-	finalFilename := time.Now().Format("20240604") + "all_crypto.json"
-	allData := ResponseData{}
+	finalFilename := time.Now().Format("20240601") + "all_crypto.json"
 	finalJsonData, err := json.Marshal(allData)
 	if err != nil {
 		fmt.Println(err)
@@ -100,12 +107,41 @@ func main() {
 	}
 
 	// Remove individual files
-	// for page := 1; page <= maxPages; page++ {
-	// 	filename := fmt.Sprintf("crypto_%d.json", page)
-	// 	err = os.Remove(filename)
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 	}
-	// }
+	for page := 1; page <= maxPages; page++ {
+		filename := fmt.Sprintf("crypto_%d.json", page)
+		err = os.Remove(filename)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 
+	fmt.Printf("Data saved to %s\n", finalFilename)
+
+	// Git operations
+	err = runGitCommand("config", "--global", "user.name", "github-actions[bot]")
+	if err != nil {
+		fmt.Println("Error configuring Git user:", err)
+		return
+	}
+	err = runGitCommand("config", "--global", "user.email", "github-actions[bot]@users.noreply.github.com")
+	if err != nil {
+		fmt.Println("Error configuring Git email:", err)
+		return
+	}
+	err = runGitCommand("add", finalFilename)
+	if err != nil {
+		fmt.Println("Error adding files to Git:", err)
+		return
+	}
+	timestamp := time.Now().UTC().Format(time.RFC3339)
+	err = runGitCommand("commit", "-m", fmt.Sprintf("%s all_crypto.json", timestamp))
+	if err != nil {
+		fmt.Println("Error committing changes:", err)
+		return
+	}
+	err = runGitCommand("push", "https://${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git", "HEAD:master")
+	if err != nil {
+		fmt.Println("Error pushing changes:", err)
+		return
+	}
 }
