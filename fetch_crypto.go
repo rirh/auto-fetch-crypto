@@ -94,7 +94,7 @@ func main() {
 		allData = append(allData, data.Data...)
 	}
 
-	finalFilename := time.Now().Format("20240601") + "_crypto.json"
+	finalFilename := time.Now().Format("20060102") + "_crypto.json"
 	finalJsonData, err := json.Marshal(allData)
 	if err != nil {
 		fmt.Println(err)
