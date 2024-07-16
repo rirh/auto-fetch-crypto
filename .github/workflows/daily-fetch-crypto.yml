@@ -1,28 +1,54 @@
-name: Daily Fetch
+name: Daily Fetch Crypto
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Runs every day at midnight UTC
+    - cron: "0 0 * * *" # Runs every day at midnight UTC
   workflow_dispatch:
 
 jobs:
-  fetch-data:
+  crypto:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: '1.19'
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.19"
 
-    - name: Initialize Go module
-      run: go mod init main
+      - name: Initialize Go module
+        run: go mod init main
 
-    - name: Run Go script
-      env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-      run: go run fetch_crypto.go
+      - name: Run Go script
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: go run fetch_crypto.go
+
+      - name: Get current date
+        id: get_date
+        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: daily-fetch-${{ github.run_id }}
+          release_name: Daily Fetch ${{ github.run_id }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.DATE }}_crypto.json
+          asset_name: ${{ env.DATE }}_crypto.json
+          asset_content_type: application/json

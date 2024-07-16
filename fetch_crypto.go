@@ -94,7 +94,7 @@ func main() {
 		allData = append(allData, data.Data...)
 	}
 
-	finalFilename := time.Now().Format("20240601") + "all_crypto.json"
+	finalFilename := time.Now().Format("20240601") + "_crypto.json"
 	finalJsonData, err := json.Marshal(allData)
 	if err != nil {
 		fmt.Println(err)
@@ -117,7 +117,6 @@ func main() {
 
 	fmt.Printf("Data saved to %s\n", finalFilename)
 
-	// Git operations
 	err = runGitCommand("config", "--global", "user.name", "github-actions[bot]")
 	if err != nil {
 		fmt.Println("Error configuring Git user:", err)
@@ -139,7 +138,12 @@ func main() {
 		fmt.Println("Error committing changes:", err)
 		return
 	}
-	err = runGitCommand("push", "https://${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git", "HEAD:master")
+	GH_TOKEN := os.Getenv("GH_TOKEN")
+	GITHUB_ACTOR := os.Getenv("GITHUB_ACTOR")
+	GITHUB_REPOSITORY := os.Getenv("GITHUB_REPOSITORY")
+	url := fmt.Sprintf("https://%s@github.com/%s/%s.git", GH_TOKEN, GITHUB_ACTOR, GITHUB_REPOSITORY)
+	fmt.Println("Pushing changes to", url)
+	err = runGitCommand("push", url, "HEAD:master")
 	if err != nil {
 		fmt.Println("Error pushing changes:", err)
 		return
