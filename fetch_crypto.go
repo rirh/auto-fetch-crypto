@@ -53,40 +53,41 @@ func getItem(page, size int, wg *sync.WaitGroup, ch chan<- ResponseData) {
 }
 
 func main() {
-	maxPages := 221
-	const size = 100
-	var wg sync.WaitGroup
-	ch := make(chan ResponseData, maxPages)
+	// maxPages := 221
+	// const size = 100
+	// var wg sync.WaitGroup
+	// ch := make(chan ResponseData, maxPages)
 
-	for page := 1; page <= maxPages; page++ {
-		wg.Add(1)
-		time.Sleep(time.Millisecond * 200)
-		go getItem(page, size, &wg, ch)
-	}
+	// for page := 1; page <= maxPages; page++ {
+	// 	wg.Add(1)
+	// 	time.Sleep(time.Millisecond * 200)
+	// 	go getItem(page, size, &wg, ch)
+	// }
 
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
+	// go func() {
+	// 	wg.Wait()
+	// 	close(ch)
+	// }()
 
-	var allData []interface{}
-	for data := range ch {
-		filename := fmt.Sprintf("crypto_%d.json", data.Currpage)
-		jsonData, err := json.Marshal(data.Data)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		err = os.WriteFile(filename, jsonData, 0644)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
+	// var allData []interface{}
+	// for data := range ch {
+	// 	filename := fmt.Sprintf("crypto_%d.json", data.Currpage)
+	// 	jsonData, err := json.Marshal(data.Data)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 		return
+	// 	}
+	// 	err = os.WriteFile(filename, jsonData, 0644)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 		return
+	// 	}
 
-		allData = append(allData, data.Data...)
-	}
+	// 	allData = append(allData, data.Data...)
+	// }
 
 	finalFilename := time.Now().Format("20240604") + "all_crypto.json"
+	allData := ResponseData{}
 	finalJsonData, err := json.Marshal(allData)
 	if err != nil {
 		fmt.Println(err)
@@ -99,12 +100,12 @@ func main() {
 	}
 
 	// Remove individual files
-	for page := 1; page <= maxPages; page++ {
-		filename := fmt.Sprintf("crypto_%d.json", page)
-		err = os.Remove(filename)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
+	// for page := 1; page <= maxPages; page++ {
+	// 	filename := fmt.Sprintf("crypto_%d.json", page)
+	// 	err = os.Remove(filename)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 	}
+	// }
 
 }
