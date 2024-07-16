@@ -2,7 +2,7 @@ name: Daily Fetch Crypto
 
 on:
   schedule:
-    - cron: "0 0 * * *" # Runs every day at midnight UTC
+    - cron: "* * * * *" # Runs every day at midnight UTC
   workflow_dispatch:
 
 jobs:
@@ -27,27 +27,14 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: go run fetch_crypto.go
 
-      - name: Get current date
-        id: get_date
-        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+      - name: Commit
+        run: |
+          git config --local user.email "hugozach@163.com"
+          git config --local user.name "hugsin"
+          git remote set-url origin https://${{ github.actor }}:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}
+          git pull --rebase
+          git add "$(date +'%Y%m%d')_crypto.json"
+          git commit --allow-empty -m "Add $(date +'%Y%m%d')_crypto.json"
+          git push
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: daily-fetch-${{ github.run_id }}
-          release_name: Daily Fetch ${{ github.run_id }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.DATE }}_crypto.json
-          asset_name: ${{ env.DATE }}_crypto.json
-          asset_content_type: application/json
+    
