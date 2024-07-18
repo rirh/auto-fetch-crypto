@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"sync"
 	"time"
 )
@@ -14,9 +13,10 @@ import (
 type ResponseData struct {
 	Data     []interface{} `json:"data"`
 	Currpage int           `json:"currpage"`
+	Maxpage  int           `json:"maxpage"`
 }
 
-func getItem(page, size int, wg *sync.WaitGroup, ch chan<- ResponseData) {
+func getItem(page, size int, wg *sync.WaitGroup, ch chan<- ResponseData, chMaxPage chan<- int) {
 	defer wg.Done()
 	url := fmt.Sprintf("https://dncapi.bostonteapartyevent.com/api/coin/web-coinrank?page=%d&type=-1&pagesize=%d&webp=1", page, size)
 	client := &http.Client{}
@@ -50,26 +50,33 @@ func getItem(page, size int, wg *sync.WaitGroup, ch chan<- ResponseData) {
 		return
 	}
 
+	if page == 1 {
+		chMaxPage <- responseData.Maxpage
+		close(chMaxPage)
+	}
+
 	ch <- responseData
 }
 
-func runGitCommand(args ...string) error {
-	cmd := exec.Command("git", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
-}
-
 func main() {
-	const maxPages = 221
 	const size = 100
 	var wg sync.WaitGroup
-	ch := make(chan ResponseData, maxPages)
+	ch := make(chan ResponseData)
+	chMaxPage := make(chan int, 1)
 
-	for page := 1; page <= maxPages; page++ {
+	// Start the first request to get max pages
+	wg.Add(1)
+	go getItem(1, size, &wg, ch, chMaxPage)
+
+	// Get the max pages from the first request
+	maxPages := <-chMaxPage
+	fmt.Printf("Max pages: %d\n", maxPages)
+
+	// Start the remaining requests based on max pages
+	for page := 2; page <= maxPages; page++ {
 		wg.Add(1)
 		time.Sleep(time.Millisecond * 200)
-		go getItem(page, size, &wg, ch)
+		go getItem(page, size, &wg, ch, nil)
 	}
 
 	go func() {
