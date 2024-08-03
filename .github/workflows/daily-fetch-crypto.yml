@@ -23,18 +23,18 @@ jobs:
       - name: Initialize Go module
         run: go mod init main
 
-      - name: Run Go script
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: go run fetch_crypto.go
+      # - name: Run Go script
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      #     GITHUB_REPOSITORY: ${{ github.repository }}
+      #   run: go run fetch_crypto.go
 
       - name: Commit
         run: |
           git config --local user.email "hugozach@163.com"
           git config --local user.name "hugsin"
           git remote set-url origin https://${{ github.actor }}:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}
-          git add "$(date +'%Y%m%d')_crypto.json"
+          # git add "$(date +'%Y%m%d')_crypto.json"
           git commit --allow-empty -m "Add $(date +'%Y%m%d')_crypto.json"
           git push
 
