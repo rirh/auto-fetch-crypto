@@ -23,11 +23,11 @@ jobs:
       - name: Initialize Go module
         run: go mod init main
 
-      # - name: Run Go script
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      #     GITHUB_REPOSITORY: ${{ github.repository }}
-      #   run: go run fetch_crypto.go
+      - name: Run Go script
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          run: go run fetch_crypto.go
 
       - name: Commit
         run: |
